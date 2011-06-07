@@ -1,7 +1,7 @@
 // ==========================================================================
 // Project:   SproutCore - JavaScript Application Framework
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2010 Apple Inc. All rights reserved.
+//            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
@@ -28,12 +28,12 @@ SC.ContainerView = SC.View.extend(
   classNames: ['sc-container-view'],
   
   /**
-    Optional path name for the content view.  Set this to a property path 
+    Optional path name for the content view.  Set this to a property path
     pointing to the view you want to display.  This will automatically change
-    the content view for you.  If you pass a single property name (e.g.
-    "myView") then the container view will look up the property on its own 
-    page object.  If you pass a full property name 
-    (e.g. "MyApp.anotherPage.anotherView"), then the path will be followed 
+    the content view for you. If you pass a relative property path or a single
+    property name, then the container view will look for it first on its page
+    object then relative to itself. If you pass a full property name
+    (e.g. "MyApp.anotherPage.anotherView"), then the path will be followed
     from the top-level.
     
     @property {String, SC.View}
@@ -102,20 +102,30 @@ SC.ContainerView = SC.View.extend(
     
     // If nowShowing was changed because the content was set directly, then do nothing.
     if (content === SC.CONTENT_SET_DIRECTLY) return ;
-    
+
+    // Take note now if we need to destroy the current contentView
+    var viewToDestroy = (this._instantiatedLastView === YES) ? this.get('contentView') : null;
+
+    // Reset for next time
+    this._instantiatedLastView = NO;
+
     // If it's a string, try to turn it into the object it references...
     if (SC.typeOf(content) === SC.T_STRING && content.length > 0) {
       if (content.indexOf('.') > 0) {
         content = SC.objectForPropertyPath(content);
       } else {
-        content = SC.objectForPropertyPath(content, this.get('page'));
+        var tempContent = this.getPath(content);
+        content = SC.kindOf(tempContent, SC.View) ? tempContent : SC.objectForPropertyPath(content, this.get('page'));
       }
     }
     
     // If it's an uninstantiated view, then attempt to instantiate it.
     // (Uninstantiated views have a create() method; instantiated ones do not.)
     if (SC.typeOf(content) === SC.T_CLASS) {
-      if (content.kindOf(SC.View)) content = content.create();
+      if (content.kindOf(SC.View)) {
+        content = this.createChildView(content);
+        this._instantiatedLastView = YES;
+      } 
       else content = null;
     } 
     
@@ -124,6 +134,9 @@ SC.ContainerView = SC.View.extend(
     
     // Sets the content.
     this.set('contentView', content) ;
+
+    // If we need to cleanup the previous view, do so
+    if(viewToDestroy) viewToDestroy.destroy();
     
   }.observes('nowShowing'),
   
