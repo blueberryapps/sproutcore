@@ -1,5 +1,5 @@
 /**
- * Complex Nested Records (SC.ChildRecord) Unit Test
+ * Complex Nested Records (SC.Record) Unit Test
  *
  * @author Evin Grano
  */
@@ -10,16 +10,16 @@
 var NestedRecord, store, storeKeys; 
 
 var initModels = function(){
-  NestedRecord.Directory = SC.ChildRecord.extend({
+  NestedRecord.Directory = SC.Record.extend({
     /** Child Record Namespace */
-    childRecordNamespace: NestedRecord,
+    nestedRecordNamespace: NestedRecord,
     primaryKey: 'id',
     id: SC.Record.attr(Number),
     name: SC.Record.attr(String),
     contents: SC.Record.toMany('SC.Record', { nested: true })
   });
   
-  NestedRecord.File = SC.ChildRecord.extend({
+  NestedRecord.File = SC.Record.extend({
     primaryKey: 'id',
     id: SC.Record.attr(Number),
     name: SC.Record.attr(String)
@@ -30,7 +30,7 @@ var initModels = function(){
 // ..........................................................
 // Basic SC.Record Stuff
 // 
-module("Parentless SC.ChildRecord", {
+module("Parentless SC.Record", {
 
   setup: function() {
     NestedRecord = SC.Object.create({
@@ -87,12 +87,12 @@ test("Proper Initialization",function() {
   
   // First
   first = store.materializeRecord(storeKeys[0]);
-  ok(SC.kindOf(first, SC.ChildRecord), "first record is a kind of a SC.ChildRecord Object");
+  ok(SC.kindOf(first, SC.Record), "first record is a kind of a SC.Record Object");
   ok(SC.instanceOf(first, NestedRecord.Directory), "first record is a instance of a NestedRecord.Directory Object");
   
   // Second
   second = store.materializeRecord(storeKeys[1]);
-  ok(SC.kindOf(second, SC.ChildRecord), "second record is a kind of a SC.ChildRecord Object");
+  ok(SC.kindOf(second, SC.Record), "second record is a kind of a SC.Record Object");
   ok(SC.instanceOf(second, NestedRecord.File), "second record is a instance of a NestedRecord.File Object");
 });
 
