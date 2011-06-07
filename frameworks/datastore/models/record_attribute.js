@@ -318,7 +318,9 @@ SC.RecordAttribute.registerTransform(Boolean, {
 SC.RecordAttribute.registerTransform(Number, {
   /** @private - convert an arbitrary object value to a Number */
   to: function(obj) {
-    return SC.none(obj) ? null : Number(obj) ;
+    var n = SC.none(obj) ? null : Number(obj) ;
+    if (isNaN(n)) n = null;
+    return n;
   }
 });
 
